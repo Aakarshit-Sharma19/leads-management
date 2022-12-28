@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 
+from django.contrib.messages import constants as messages
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,7 +26,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "authentication"
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'authentication',
+    'portal',
+    'leads_data'
 ]
 
 MIDDLEWARE = [
@@ -50,7 +58,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "authentication.context_processors.get_random_avatar_url"
+                "authentication.context_processors.get_random_avatar_url",
+                "authentication.context_processors.get_url_name"
             ],
         },
     },
@@ -58,12 +67,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "leads_management.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-
+MESSAGE_TAGS = {
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+    messages.DEBUG: 'alert-debug'
+}
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to log in by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend'
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -79,6 +99,34 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+# Allauth
+# https://django-allauth.readthedocs.io/en/latest/configuration.html
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_ADAPTER = 'authentication.adapter.NoNewUsersAccountAdapter'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+SOCIALACCOUNT_ADAPTER = 'authentication.adapter.SocialAdapter'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/documents'
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'offline',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
+
+ACCOUNT_FORMS = {
+    'login': 'authentication.forms.LoginForm'
+}
+SOCIALACCOUNT_STORE_TOKENS = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -106,9 +154,16 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Auth
 AUTH_USER_MODEL = 'authentication.PortalUser'
 
 # Routes
-LOGIN_REDIRECT_URL = "index"
-LOGOUT_REDIRECT_URL = "index"
-LOGIN_URL = "login_view"
+LOGIN_REDIRECT_URL = "portal_index"
+LOGOUT_REDIRECT_URL = "portal_index"
+LOGIN_URL = "account_login"
+
+# Leads Google Docs specific settings
+
+DOCS_FOLDER_NAME = 'leads_management_docs'
+
+SITE_ID = 1

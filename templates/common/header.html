@@ -214,7 +214,7 @@
                     </li>
 
                     <li>
-                        <form method="post" action="{% url 'logout_view' %}">
+                        <form method="post" action="{% url 'account_logout' %}">
                             {% csrf_token %}
                             <button type="submit" class="dropdown-item d-flex align-items-center" href="#">
                                 <i class="bi bi-box-arrow-right"></i>

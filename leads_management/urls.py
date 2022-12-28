@@ -21,8 +21,11 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("auth/", include('authentication.urls')),
-    path("", include("portal.urls"))
+    path("accounts/", include('authentication.urls')),
+    path("accounts/", include('allauth.urls')),
+    path("spaces/", include("document_spaces.urls")),
+    path("", include("portal.urls")),
+    # path("poc/", include("poc.urls")),
 ]
 
 if settings.DEBUG:

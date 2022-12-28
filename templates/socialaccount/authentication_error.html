@@ -1,0 +1,12 @@
+{% extends "common/clean_form_base.html" %}
+
+{% load i18n %}
+
+{% block form_title %}{% trans "Social Network Login Failure" %}{% endblock %}
+
+
+{% block form_info %}
+
+{% trans "An error occurred while attempting to login via your social network account." %}
+    <a href="{% url 'portal_index' %}"> Go to Home</a>
+{% endblock %}

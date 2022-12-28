@@ -1,10 +1,13 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
+from django.core.management.utils import get_random_string
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-# Create your models here.
+def get_random_string_60():
+    return get_random_string(60)
+
 
 class CustomUserManager(BaseUserManager):
     """
@@ -40,16 +43,19 @@ class CustomUserManager(BaseUserManager):
 
 
 class PortalUser(AbstractUser):
-    username = models.CharField(
-        'username', unique=True, blank=False, max_length=10)
+    username = None
     # Identifiable Information
     first_name = models.CharField(
         'First Name', unique=False, blank=False, max_length=50)
     last_name = models.CharField(
         'Last Name', unique=False, blank=False, max_length=20)
-    email = models.EmailField('email address', unique=True, blank=False)
+    email = models.EmailField('Email Address', unique=True, blank=False)
+
+    is_space_owner = models.BooleanField('Is Space Owner', default=False, blank=False,
+                                         help_text=_("Designates whether the user will have their own space or not"),
+                                         )
     failed_attempts = models.IntegerField(default=0)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = CustomUserManager()

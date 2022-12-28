@@ -1,0 +1,233 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}
+    Dashboard - NiceAdmin Bootstrap Template
+{% endblock %}
+{% block scripts %}
+    {% if user.is_space_owner %}
+        <script>
+            var csrfToken = "{{ csrf_token }}";
+        </script>
+        <script src="{% static 'assets/js/spaces-operations.js' %}"></script>
+        <script>
+            $('form#addManagerForm')[0].addEventListener('submit', addManager);
+            $('form#addWriterForm')[0].addEventListener('submit', addWriter);
+        </script>
+    {% endif %}
+{% endblock %}
+{% block content %}
+
+    {% include "common/header.html" %}
+
+    {% include "common/sidebar.html" %}
+
+    <main id="main" class="main">
+
+        <div class="pagetitle">
+            <h1>Space Overview of {{ space.owner.get_full_name }}</h1>
+        </div><!-- End Page Title -->
+
+        <section class="section profile">
+            <div class="row">
+
+                <div class="card">
+                    <div class="card-body pt-3">
+                        <!-- Bordered Tabs -->
+                        <ul class="nav nav-tabs nav-tabs-bordered">
+
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#space-overview">
+                                    Owner
+                                </button>
+                            </li>
+
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#space-managers">Managers
+                                </button>
+                            </li>
+
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#space-writers">
+                                    Writers
+                                </button>
+                            </li>
+
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#space-files">
+                                    Files
+                                </button>
+                            </li>
+
+                        </ul>
+                        <div class="tab-content pt-2">
+                            <div class="tab-pane fade show active profile-overview" id="space-overview">
+                                <h5 class="card-title">Owner</h5>
+
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-4 label ">Full Name</div>
+                                    <div class="col-lg-9 col-md-8">{{ space.owner.get_full_name }}</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-4 label">Email</div>
+                                    <div class="col-lg-9 col-md-8">{{ space.owner.email }}</div>
+                                </div>
+
+                            </div>
+                            <div class="tab-pane fade profile-edit pt-3" id="space-managers">
+                                {% if user.is_space_owner %}
+                                    <form id="addManagerForm" action="{% url 'spaces_api:spaces_manager' %}">
+                                        <div class="row mb-3">
+                                            <div class="col-md-3 col-sm-12">
+                                                <label for="inputManagerEmail" class="col-form-label">Add
+                                                    Manager</label>
+                                            </div>
+                                            <div class="col-md-6 col-sm-12">
+                                                <input type="email" required
+                                                       pattern="^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$"
+                                                       id="inputManagerEmail" class="form-control"
+                                                       placeholder="Manager's Email">
+                                            </div>
+                                            <div class="col-md-3 col-sm-12">
+                                                <button type="submit" form="addManagerForm"
+                                                        class="btn btn-primary w-100">
+                                                    Add Manager
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                {% endif %}
+                                <!-- Profile Edit Form -->
+                                <table class="table" id="managers-table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Email</th>
+                                        {% if user.is_space_owner %}
+                                            <th scope="col">Delete</th>
+                                        {% endif %}
+                                    </tr>
+                                    </thead>
+                                    <tbody action-url="{% url 'spaces_api:spaces_manager' %}">
+                                    {% for manager in space.managers.all %}
+                                        <tr id="managers-entry-{{ forloop.counter }}">
+                                            <th scope="row">{{ forloop.counter }}</th>
+                                            <td>{{ manager.get_full_name }}</td>
+                                            <td>{{ manager.email }}</td>
+                                            {% if user.is_space_owner %}
+                                                <td>
+                                                    <button class="btn btn-danger"
+                                                            table-row-id="#managers-entry-{{ forloop.counter }}"
+                                                            email="{{ manager.email }}"
+                                                            onclick="removeManager(this)"
+                                                    >Delete
+                                                    </button>
+                                                </td>
+                                            {% endif %}
+                                        </tr>
+                                    {% empty %}
+                                        No Managers assigned
+                                    {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="tab-pane fade profile-edit pt-3" id="space-writers">
+                                {% if user.is_space_owner %}
+                                    <form id="addWriterForm" action="{% url 'spaces_api:spaces_writer' %}">
+                                        <div class="row mb-3">
+                                            <div class="col-md-3 col-sm-12">
+                                                <label for="inputWriterEmail" class="col-form-label">Add
+                                                    Writer</label>
+                                            </div>
+                                            <div class="col-md-6 col-sm-12">
+                                                <input type="email" required
+                                                       pattern="^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$"
+                                                       id="inputWriterEmail" class="form-control"
+                                                       placeholder="Writer's Email">
+                                            </div>
+                                            <div class="col-md-3 col-sm-12">
+                                                <button type="submit" form="addWriterForm"
+                                                        class="btn btn-primary w-100">
+                                                    Add Writer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                {% endif %}
+                                <!-- Profile Edit Form -->
+                                <table class="table" id="writers-table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Email</th>
+                                        {% if user.is_space_owner %}
+                                            <th scope="col">Delete</th>
+                                        {% endif %}
+                                    </tr>
+                                    </thead>
+                                    <tbody action-url="{% url 'spaces_api:spaces_writer' %}">
+                                    {% for writer in space.writers.all %}
+                                        <tr id="writers-entry-{{ forloop.counter }}">
+                                            <th scope="row">{{ forloop.counter }}</th>
+                                            <td>{{ writer.get_full_name }}</td>
+                                            <td>{{ writer.email }}</td>
+                                            {% if user.is_space_owner %}
+                                                <td>
+                                                    <button class="btn btn-danger"
+
+                                                            table-row-id="#writers-entry-{{ forloop.counter }}"
+                                                            email="{{ writer.email }}"
+                                                            onclick="removeWriter(this)"
+                                                    >Delete
+                                                    </button>
+                                                </td>
+                                            {% endif %}
+                                        </tr>
+                                    {% empty %}
+                                        No Writers assigned
+                                    {% endfor %}
+
+                                    </tbody>
+                                </table>
+
+                            </div>
+
+                            <div class="tab-pane fade profile-edit pt-3" id="space-files">
+
+                                <!-- Profile Edit Form -->
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Name</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for file in space.files.all %}
+                                        <tr>
+                                            <th scope="row">{{ forloop.counter }}</th>
+                                            <td>{{ file.file_name }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        No files added
+                                    {% endfor %}
+
+                                    </tbody>
+                                </table>
+
+                            </div>
+
+                        </div><!-- End Bordered Tabs -->
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main><!-- End #main --
+{% endblock %}

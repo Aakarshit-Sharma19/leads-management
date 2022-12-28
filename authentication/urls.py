@@ -1,7 +1,6 @@
-from django.urls import path
-from authentication.views import LoginView, LogoutView
-
+from django.urls import path, include
+from authentication import views
 urlpatterns = [
-    path('login/', LoginView.as_view(), name='login_view'),
-    path('logout/', LogoutView.as_view(), name='logout_view'),
+    path("profile/", views.ProfileView.as_view(), name='accounts_users_profile'),
+    path("profile/change-password/", views.profile_change_password_url, name='accounts_change_password')
 ]
