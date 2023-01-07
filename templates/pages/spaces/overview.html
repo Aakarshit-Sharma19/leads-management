@@ -13,6 +13,9 @@
         <script>
             $('form#addManagerForm')[0].addEventListener('submit', addManager);
             $('form#addWriterForm')[0].addEventListener('submit', addWriter);
+            {% if request.GET.tab %}
+                $("[data-bs-toggle][data-bs-target='#{{ request.GET.tab }}']").click()
+            {% endif %}
         </script>
     {% endif %}
 {% endblock %}
@@ -198,13 +201,36 @@
                             </div>
 
                             <div class="tab-pane fade profile-edit pt-3" id="space-files">
-
-                                <!-- Profile Edit Form -->
+                                {% if fileUploadForm %}
+                                    <div class="alert alert-warning">
+                                        The size of the should not exceed 24MBs.
+                                    </div>
+                                    <form id="uploadDocumentForm" class="row mb-3"
+                                          action="{% url 'spaces_file_upload' pk=space.pk %}"
+                                          enctype="multipart/form-data" method="post">
+                                        {% csrf_token %}
+                                        <label for="" class="col-sm-12 col-md-3">Document</label>
+                                        <div class="col-sm-12 col-md-6">
+                                            {{ fileUploadForm.document }}
+                                        </div>
+                                        <div class="col-sm-12 col-md-3">
+                                            <button type="submit" form="uploadDocumentForm"
+                                                    class="btn btn-primary w-100">
+                                                Upload
+                                            </button>
+                                        </div>
+                                    </form>
+                                {% endif %}
                                 <table class="table">
                                     <thead>
                                     <tr>
                                         <th scope="col">#</th>
                                         <th scope="col">Name</th>
+                                        {% if user.is_space_owner %}
+                                            <th scope="col">Data</th>
+                                            <th scope="col">Responses</th>
+                                            <th scope="col">Delete</th>
+                                        {% endif %}
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -212,6 +238,28 @@
                                         <tr>
                                             <th scope="row">{{ forloop.counter }}</th>
                                             <td>{{ file.file_name }}</td>
+                                            {% if user.is_space_owner %}
+                                                <td>
+                                                    {% if file.web_content_link %}
+                                                        <a target="_blank" href="{{ file.web_content_link }}"
+                                                           class="btn btn-outline-primary">Open Data</a>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if file.response_file.web_content_link %}
+                                                        <a target="_blank"
+                                                           href="{{ file.response_file.web_content_link }}"
+                                                           class="btn btn-outline-primary">Open Responses</a>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a class="btn btn-outline-danger"
+                                                       href="{% url  'spaces_file_delete' space_pk=space.pk pk=file.pk %}">
+                                                        Delete
+                                                    </a>
+                                                </td>
+                                            {% endif %}
+
                                         </tr>
                                     {% empty %}
                                         No files added

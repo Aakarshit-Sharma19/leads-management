@@ -1,8 +1,7 @@
 import uuid
 
 
-class GoogleAPIHttpError(Exception):
-
+class BaseGoogleServiceException(Exception):
     def __init__(self, message):
         self.error_id = uuid.uuid4()
         self.message = message
@@ -11,28 +10,26 @@ class GoogleAPIHttpError(Exception):
         return f'{self.__class__.__name__}: (errorId: f{self.error_id}) {self.message}'
 
 
-class MissingFolderStructure(Exception):
-    def __init__(self, message):
-        self.error_id = uuid.uuid4()
-        self.message = message
-
-    def __str__(self):
-        return f'{self.__class__.__name__}: (errorId: f{self.error_id}) {self.message}'
+class GoogleAPIHttpError(BaseGoogleServiceException):
+    pass
 
 
-class StructureCreationFailed(Exception):
-    def __init__(self, message):
-        self.error_id = uuid.uuid4()
-        self.message = message
+class MissingFolderStructure(BaseGoogleServiceException):
+    pass
 
 
-class StructureDeletionFailed(Exception):
-    def __init__(self, message):
-        self.error_id = uuid.uuid4()
-        self.message = message
+class StructureCreationFailed(BaseGoogleServiceException):
+    pass
 
 
-class SocialTokenNotFound(Exception):
-    def __init__(self, message):
-        self.error_id = uuid.uuid4()
-        self.message = message
+class StructureDeletionFailed(BaseGoogleServiceException):
+    pass
+
+class DocumentDeletionFailed(BaseGoogleServiceException):
+    pass
+
+class SocialTokenNotFound(BaseGoogleServiceException):
+    pass
+
+class FileToDeleteNotFound(BaseGoogleServiceException):
+    pass

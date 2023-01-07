@@ -10,14 +10,19 @@ class DocumentSpace(models.Model):
 
     def __str__(self):
         return f'Space of {self.owner.get_full_name()}'
+
     def get_absolute_url(self):
         return reverse('spaces_overview', args=(self.pk,))
+
 class DataFile(models.Model):
     space = models.ForeignKey(DocumentSpace, on_delete=models.CASCADE, related_name='files')
-    file_id = models.CharField(max_length=35, null=False, blank=False)
-    file_name = models.CharField(max_length=100)
+    web_content_link = models.URLField()
+    file_id = models.CharField(max_length=35, null=False, blank=False, unique=True)
+    file_name = models.CharField(max_length=100, unique=True)
     current_row = models.IntegerField(default=0)
 
 
-class UpdatedFile(models.Model):
-    data_file = models.OneToOneField(DataFile, related_name='updated_file', on_delete=models.CASCADE)
+class ResponseFile(models.Model):
+    data_file = models.OneToOneField(DataFile, related_name='response_file', on_delete=models.CASCADE)
+    web_content_link = models.URLField()
+    file_id = models.CharField(max_length=35, null=False, blank=False, unique=True)

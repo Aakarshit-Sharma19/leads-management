@@ -40,11 +40,11 @@ async function addManager(formEvent) {
             } else {
                 alert('The user has already been added in this space as a manager.');
             }
+            form.trigger('reset');
         } else {
             const data = await response.json();
             alert(`Error while adding manager, reason: ${data?.message ?? 'Unknown'}`);
         }
-
     } catch (e) {
         alert('Error while adding manager; Please reload the page.');
         console.error(e);
@@ -92,6 +92,7 @@ async function addWriter(formEvent) {
             } else {
                 alert('The user has already been added in this space as a writer.');
             }
+            form.trigger('reset');
         } else {
             const data = await response.json();
             alert(`Error while adding writer, reason: ${data?.message ?? 'Unknown'}; Please reload the page.`);
@@ -164,3 +165,28 @@ async function removeWriter(entryButtonElement) {
         }
     }
 }
+
+$('input[type=file]').bind('change', function () {
+    const supportedTypes = [
+        'text/tab-separated-values',
+        'application/vnd.ms-excel.sheet.macroenabled.12',
+        'application/vnd.ms-excel',
+        'application/vnd.oasis.opendocument.spreadsheet',
+        'application/x-vnd.oasis.opendocument.spreadsheet',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
+        'application/vnd.ms-excel.template.macroenabled.12',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv'
+    ];
+    const messages = [];
+    if (this.files[0].size > 24 * 1024 * 1024) {
+        messages.push('The max file size is 24 MiB');
+    }
+    if (!supportedTypes.includes(this.files[0].type)) {
+        messages.push('File type is not supported');
+    }
+    if (messages.length > 0) {
+        alert(messages.join('\n'));
+        $(this).val('');
+    }
+});
