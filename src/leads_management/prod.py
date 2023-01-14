@@ -19,8 +19,8 @@ CSRF_COOKIE_SECURE = True
 ALLOWED_HOSTS = getenv('ALLOWED_HOSTS', '').split(',')
 CSRF_TRUSTED_ORIGINS = getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
 assert len(ALLOWED_HOSTS) > 0 and len(CSRF_TRUSTED_ORIGINS) > 0
-logger.info(f'ALLOWED_HOSTS: {ALLOWED_HOSTS}')
-logger.info(f'CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}')
+logger.warning(f'ALLOWED_HOSTS: {ALLOWED_HOSTS}')
+logger.warning(f'CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}')
 
 DEBUG = False
 if os.getenv('ENABLE_DEBUG'):
