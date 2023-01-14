@@ -4,9 +4,10 @@ from os import getenv
 
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
-
 # noinspection PyUnresolvedReferences
 from leads_management.base_settings import *
+
+logger = logging.getLogger('settings')
 
 SECRET_KEY = getenv('SECRET_KEY', get_random_secret_key())
 
@@ -18,6 +19,8 @@ CSRF_COOKIE_SECURE = True
 ALLOWED_HOSTS = getenv('ALLOWED_HOSTS', '').split(',')
 CSRF_TRUSTED_ORIGINS = getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
 assert len(ALLOWED_HOSTS) > 0 and len(CSRF_TRUSTED_ORIGINS) > 0
+logger.info(f'ALLOWED_HOSTS: {ALLOWED_HOSTS}')
+logger.info(f'CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}')
 
 DEBUG = False
 if os.getenv('ENABLE_DEBUG'):
@@ -29,7 +32,7 @@ if db_url:
         'default': dj_database_url.parse(db_url, ssl_require=False)
     }
 else:
-    logging.warning('DATABASE_URL not defined')
+    logger.warning('DATABASE_URL not defined')
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
