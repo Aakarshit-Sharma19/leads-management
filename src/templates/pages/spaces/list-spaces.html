@@ -1,0 +1,57 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}
+    Dashboard - NiceAdmin Bootstrap Template
+{% endblock %}
+{% block content %}
+
+    {% include "common/header.html" %}
+
+    {% include "common/sidebar.html" %}
+
+    <main id="main" class="main">
+
+        <div class="pagetitle">
+            <h1>Spaces you are a member of</h1>
+        </div><!-- End Page Title -->
+
+        <section class="section profile">
+            <div class="row">
+
+                <div class="card">
+                    <div class="card-body pt-3">
+
+                        <div class=" pt-3" id="space-files">
+                            <!-- Profile Edit Form -->
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for space in space_list %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>
+                                            <a href="{{ space.get_absolute_url }}">{{ space }}</a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    You are not a part of any spaces!
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main><!-- End #main --
+{% endblock %}

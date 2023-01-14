@@ -1,0 +1,65 @@
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+        <li class="nav-item">
+            <a class="nav-link
+                {% if url_name != 'portal_index' %}
+                    collapsed
+                {% endif %}" href="{% url 'portal_index' %}">
+                <i class="bi bi-grid"></i>
+                <span>Home</span>
+            </a>
+        </li><!-- End Dashboard Nav -->
+
+        <li class="nav-item">
+            <a class="nav-link {% if 'space' not in url_name %}collapsed{% endif %}"
+               data-bs-target="#spaces-nav" data-bs-toggle="collapse" href="#">
+
+                <i class="bi bi-menu-button-wide"></i><span>Spaces</span><i
+                    class="bi bi-chevron-down ms-auto"></i>
+
+            </a>
+            <ul id="spaces-nav" class="nav-content {% if 'space' not in url_name %}collapse{% endif %}"
+                data-bs-parent="#sidebar-nav">
+                {% if request.user.is_space_owner %}
+                    <li>
+                        <a class="{% if url_name == 'spaces_overview' %}
+                                active
+                            {% endif %}"
+                           href="
+                            {% if request.user.owner_of_space %}
+                                {{ request.user.owner_of_space.get_absolute_url }}
+                            {% else %}
+                                {% url "spaces_initialize" %}
+                            {% endif %}">
+                            <i class="bi bi-circle"></i><span>Overview</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a class="{% if url_name == 'spaces_list' %}
+                                active
+                            {% endif %}"
+                           href="{% url "spaces_list" %}">
+                            <i class="bi bi-circle"></i><span>List Spaces</span>
+                        </a>
+                    </li>
+
+                {% endif %}
+            </ul>
+
+        </li><!-- End Components Nav -->
+        <li class="nav-item">
+            <a class="nav-link {% if url_name != 'accounts_users_profile' %}
+                collapsed
+                {% endif %}" href="{% url 'accounts_users_profile' %}">
+                <i class="bi bi-person"></i>
+                <span>Profile</span>
+            </a>
+        </li><!-- End Profile Page Nav -->
+
+    </ul>
+
+</aside><!-- End Sidebar-->

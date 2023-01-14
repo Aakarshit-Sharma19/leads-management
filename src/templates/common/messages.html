@@ -1,0 +1,27 @@
+{% if messages or form_errors %}
+    <div id="alert-messages" class="position-absolute overflow-hidden" style="top: 25px; right: 25px; max-width: 75vw; z-index: 10000">
+        {% for message in messages %}
+            <div class="alert
+            {% if not message.tags %}alert-danger{% endif %}
+            {{ message.tags }}
+             alert-dismissible fade show">
+                {{ message | striptags }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+
+        {% endfor %}
+        {% for message in form_errors %}
+            <div class="alert
+            {% if not message.tags %}alert-danger{% endif %}
+            {{ message.tags }}
+             alert-dismissible fade show">
+                {{ message | striptags }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+
+        {% endfor %}
+
+    </div>
+{% endif %}

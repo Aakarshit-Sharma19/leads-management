@@ -1,0 +1,47 @@
+{% extends "common/clean_form_base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Initialize Space" %}{% endblock %}
+
+{% block form_title %}
+    {% trans "Initialize Your Space" %}
+{% endblock %}
+{% block form_info %}
+    {% if form %}
+        {% trans "Type 'create space' in the field below to create your own document space." %}
+    {% endif %}
+    <a href="{% url 'portal_index' %}"> Go Back</a>
+{% endblock %}
+{% block form %}
+    {% if form %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary" disabled>Submit</button>
+            </div>
+        </form>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        (function () {
+            const form = document.querySelector('form');
+            const formInputs = document.querySelectorAll('form input');
+            const submitButton = document.querySelector('form button[type=submit]')
+            formInputs.forEach((ele) => {
+                ele.addEventListener('input', () => {
+                    if (form.checkValidity()) {
+                        submitButton.removeAttribute('disabled');
+                    } else {
+                        submitButton.setAttribute('disabled', 'true');
+                    }
+                })
+
+            })
+        })();
+
+    </script>
+{% endblock %}

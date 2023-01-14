@@ -1,0 +1,51 @@
+{% extends "common/clean_form_base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Delete this file" %}{% endblock %}
+
+{% block form_title %}
+    {% trans "Delete this file" %}
+{% endblock %}
+{% block form_info %}
+    {% if form %}
+        {% trans "Type the file name in the field below to delete the file." %}
+        <div class="alert alert-warning">
+        {% trans "After deleting the document from the portal. The writers will not be able to make changes to the document and the files will be moved to trash in your Google Drive." %}
+        <a href="#" onclick="window.history.back()">{% trans 'Go Back' %}</a>
+        </div>
+    {% endif %}
+
+{% endblock %}
+{% block form %}
+    {% if form %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary" disabled>Delete</button>
+            </div>
+        </form>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        (function () {
+            const form = document.querySelector('form');
+            const formInputs = document.querySelectorAll('form input');
+            const submitButton = document.querySelector('form button[type=submit]')
+            formInputs.forEach((ele) => {
+                ele.addEventListener('input', () => {
+                    if (form.checkValidity()) {
+                        submitButton.removeAttribute('disabled');
+                    } else {
+                        submitButton.setAttribute('disabled', 'true');
+                    }
+                })
+
+            })
+        })();
+
+    </script>
+{% endblock %}
