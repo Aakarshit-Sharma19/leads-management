@@ -17,7 +17,7 @@ class DocumentSpace(models.Model):
 class DataFile(models.Model):
     space = models.ForeignKey(DocumentSpace, on_delete=models.CASCADE, related_name='files')
     web_content_link = models.URLField()
-    file_id = models.CharField(max_length=35, null=False, blank=False, unique=True)
+    file_id = models.CharField(max_length=100, null=False, blank=False, unique=True)
     file_name = models.CharField(max_length=100, unique=True)
     current_row = models.IntegerField(default=0)
 
@@ -25,4 +25,4 @@ class DataFile(models.Model):
 class ResponseFile(models.Model):
     data_file = models.OneToOneField(DataFile, related_name='response_file', on_delete=models.CASCADE)
     web_content_link = models.URLField()
-    file_id = models.CharField(max_length=35, null=False, blank=False, unique=True)
+    file_id = models.CharField(max_length=100, null=False, blank=False, unique=True)

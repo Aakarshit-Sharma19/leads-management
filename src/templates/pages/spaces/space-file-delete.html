@@ -12,9 +12,10 @@
         {% trans "Type the file name in the field below to delete the file." %}
         <div class="alert alert-warning">
         {% trans "After deleting the document from the portal. The writers will not be able to make changes to the document and the files will be moved to trash in your Google Drive." %}
+        <a href="#" onclick="window.history.back()">{% trans 'Go Back' %}</a>
         </div>
     {% endif %}
-    <a href="#" onclick="window.history.back()"> Go Back</a>
+
 {% endblock %}
 {% block form %}
     {% if form %}
