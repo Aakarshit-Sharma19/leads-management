@@ -1,3 +1,5 @@
+import os
+
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
 from os import getenv
@@ -12,6 +14,8 @@ CSRF_COOKIE_SECURE = True
 SECRET_KEY = getenv('SECRET_KEY', get_random_secret_key())
 ALLOWED_HOSTS = getenv('ALLOWED_HOSTS', '').split(',')
 DEBUG = False
+if os.getenv('ENABLE_DEBUG'):
+    DEBUG = True
 
 db_url = getenv('DATABASE_URL')
 assert db_url
