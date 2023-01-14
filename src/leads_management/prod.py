@@ -6,7 +6,7 @@ from os import getenv
 from leads_management.base_settings import *
 
 SECURE_HSTS_SECONDS = True
-SECURE_SSL_REDIRECT = True
+# SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECRET_KEY = getenv('SECRET_KEY', get_random_secret_key())
