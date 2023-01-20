@@ -38,13 +38,13 @@ class SpaceInitializeView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         drive_service = DriveService(user=self.request.user)
         try:
             drive_service.ensure_folder_structure()
-        except service_exceptions.MissingFolderStructure:
+        except service_exceptions.MissingFolderStructureException:
             try:
                 drive_service.create_folder_structure()
-            except service_exceptions.StructureCreationFailed as e:
+            except service_exceptions.StructureCreationFailedException as e:
                 logger.exception(f'ErrorId: {e.error_id}: {e.message}')
                 messages.error(self.request, f'{e.message} | ErrorId: {e.error_id}')
-        except service_exceptions.GoogleAPIHttpError as e:
+        except service_exceptions.GoogleAPIHttpException as e:
             logger.exception(f'ErrorId: {e.error_id}: {e.message}')
             messages.error(self.request, f'{e.message} | ErrorId: {e.error_id}')
         space, _ = DocumentSpace.objects.get_or_create(owner=self.request.user)

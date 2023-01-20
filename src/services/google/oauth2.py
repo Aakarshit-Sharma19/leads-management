@@ -26,7 +26,8 @@ def get_user_credentials(user, override=False):
         try:
             token = SocialToken.objects.get(account__user=user)
         except SocialToken.DoesNotExist as e:
-            raise service_exceptions.SocialTokenNotFound(message=f'SocialToken for user {user} does not exist') from e
+            raise service_exceptions.SocialTokenNotFoundException(
+                message=f'SocialToken for user {user} does not exist') from e
         provider_app: SocialApp = SocialApp.objects.last()
         creds = {
             "token": token.token,
