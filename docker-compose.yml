@@ -1,0 +1,31 @@
+version: "3"
+services:
+  web:
+    build: ./
+    expose:
+      - 8000
+    env_file:
+      - .env
+    volumes:
+      - staticfiles:/app/collected_staticfiles
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - staticfiles:/usr/share/nginx/static:ro
+    depends_on:
+      - web
+volumes:
+  postgres_data:
+  staticfiles:
+

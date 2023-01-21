@@ -93,6 +93,8 @@ async function addWriter(formEvent) {
                 alert('The user has already been added in this space as a writer.');
             }
             form.trigger('reset');
+        } else if (response.status === 422) {
+            alert('The format of the email ID is wrong. Please check if the email is typed correctly');
         } else {
             const data = await response.json();
             alert(`Error while adding writer, reason: ${data?.message ?? 'Unknown'}; Please reload the page.`);
