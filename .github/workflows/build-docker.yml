@@ -1,0 +1,21 @@
+name: Build and Deploy to ECR
+
+on:
+  push:
+    branches:
+      - wip
+      - main
+
+jobs:
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3.3.0
+      - name: Set commit hash as environment variable
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        id: env_vars
+      - name: Build the image
+        run: docker build . --file Dockerfile --tag leads-management:${{ steps.vars.outputs.sha_short }}
