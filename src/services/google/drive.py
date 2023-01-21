@@ -5,46 +5,20 @@ from django.core.cache import cache
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
-from httplib2 import HttpLib2Error
 
 from services import exceptions as service_exceptions
+from services.google.common import execute_query
 from services.google.oauth2 import get_user_credentials
 
 logger = getLogger('drive')
 
 if typing.TYPE_CHECKING:
-    from googleapiclient._apis.drive.v3.resources import DriveResource, FileHttpRequest, FileListHttpRequest
-    from googleapiclient.http import HttpRequest
+    from googleapiclient._apis.drive.v3.resources import DriveResource
     from googleapiclient._apis.drive.v3.schemas import FileList, File
-
-    DriveAPIRequest: typing.TypeAlias = FileHttpRequest | FileListHttpRequest | HttpRequest
 
 
 def format_user_id_dir_struct_key(user_id):
     return f'drive_structure_for_{user_id}'
-
-
-def _execute_files_query(request: "DriveAPIRequest", raise_404=False):
-    try:
-        return request.execute()
-    except HttpError as e:
-        if e.resp.status == 404 and raise_404:
-            raise e
-        if e.resp.status == 401:
-            raise service_exceptions.GoogleAPIHttpError(
-                message='Google credentials have expired.'
-                        ' The owner of the space should be notified to re-login to the portal with Google.') from e
-        elif e.resp.status == 403:
-            raise service_exceptions.GoogleAPIHttpError(
-                message='No valid permissions to access the user\'s space at Google.'
-                        ' The owner of the space should be notified to re-login to the portal with Google'
-                        ' by checking all the checkboxes of Google Permissions') from e
-        raise service_exceptions.GoogleAPIHttpError(message='Invalid response from google API while communicating.'
-                                                            ' Please notify portal admin') from e
-    except HttpLib2Error as e:
-        raise service_exceptions.GoogleAPIHttpError(
-            message='The server could not communicate with the google API. '
-                    'Retry after some time or contact portal admin') from e
 
 
 class DriveService:
@@ -68,12 +42,12 @@ class DriveService:
         q = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
         if parent_id:
             q += f" and '{parent_id}' in parents"
-        folder: "FileList" = _execute_files_query(self._service.files().list(
+        folder: "FileList" = execute_query(self._service.files().list(
             pageSize=1,
             q=q
         ))
         if len(folder.get('files', [])) < 1:
-            raise service_exceptions.MissingFolderStructure(
+            raise service_exceptions.MissingFolderStructureException(
                 message=f'The folder {folder_name} in drive does not exist.'
                         f' Please ensure this folder is not manually deleted or moved to trash')
         return folder
@@ -101,7 +75,7 @@ class DriveService:
     def create_folder_structure(self):
         try:
             if self.dir_structure['id'] == '':
-                root_folder: "File" = _execute_files_query(self._service.files().create(body={
+                root_folder: "File" = execute_query(self._service.files().create(body={
                     'name': self.dir_structure['name'],
                     'mimeType': 'application/vnd.google-apps.folder'
                 }))
@@ -113,7 +87,7 @@ class DriveService:
                     'mimeType': 'application/vnd.google-apps.folder',
                     'parents': [self.dir_structure['id']]
                 }
-                data_folder: "File" = _execute_files_query(
+                data_folder: "File" = execute_query(
                     self._service.files().create(body=data_folder_metadata))
                 self.dir_structure['data_folder']['id'] = data_folder['id']
 
@@ -123,42 +97,43 @@ class DriveService:
                     'mimeType': 'application/vnd.google-apps.folder',
                     'parents': [self.dir_structure['id']]
                 }
-                response_folder: "File" = _execute_files_query(
+                response_folder: "File" = execute_query(
                     self._service.files().create(body=responses_folder_metadata))
                 self.dir_structure['responses_folder']['id'] = response_folder['id']
 
         except service_exceptions.BaseGoogleServiceException as e:
             raise e
         except Exception as e:
-            raise service_exceptions.StructureCreationFailed(message='An error occurred while creating '
-                                                                     f'file structure in the Google Drive'
-                                                                     f' for user {self._user.email}') from e
+            raise service_exceptions.StructureCreationFailedException(message='An error occurred while creating '
+                                                                              f'file structure in the Google Drive'
+                                                                              f' for user {self._user.email}') from e
 
     def delete_folder_structure(self):
         try:
             self.ensure_folder_structure()
-        except service_exceptions.MissingFolderStructure:
+        except service_exceptions.MissingFolderStructureException:
             logger.warning(f'Folder structure does not exist for user {self._user.email}. Attempting delete',
                            exc_info=True)
         try:
             if len(self.dir_structure['id']) == 33:
-                _execute_files_query(self._service.files().delete(fileId=self.dir_structure['id']))
+                execute_query(self._service.files().delete(fileId=self.dir_structure['id']))
                 return True
             else:
                 return False
         except Exception as e:
-            raise service_exceptions.StructureDeletionFailed(message=f'An error occurred while deleting file structure'
-                                                                     f' in the Google Drive'
-                                                                     f' for user {self._user.email}') from e
+            raise service_exceptions.StructureDeletionFailedException(
+                message=f'An error occurred while deleting file structure'
+                        f' in the Google Drive'
+                        f' for user {self._user.email}') from e
 
     def delete_document(self, file_id: str):
         try:
             self.ensure_folder_structure()
-            _execute_files_query(self._service.files().update(fileId=file_id, body={
+            execute_query(self._service.files().update(fileId=file_id, body={
                 'trashed': True
             }), raise_404=True)
         except HttpError:
-            raise service_exceptions.FileToDeleteNotFound(
+            raise service_exceptions.FileToDeleteNotFoundException(
                 message="The file you are trying to delete is not deleted. Is this file present.")
 
     def upload_spreadsheet_to_drive(self, file: "typing.IO", name: str, content_type: str) -> "File":
@@ -168,7 +143,7 @@ class DriveService:
             'parents': [self.dir_structure['data_folder']['id']]
         }
         media = MediaIoBaseUpload(file, mimetype=content_type, chunksize=1024 * 1024)
-        return _execute_files_query(
+        return execute_query(
             self._service.files().create(body=file_metadata, media_body=media, fields=','.join([
                 'id', 'name', 'webViewLink'
             ])))
@@ -179,6 +154,6 @@ class DriveService:
             'mimeType': 'application/vnd.google-apps.spreadsheet',
             'parents': [self.dir_structure['responses_folder']['id']]
         }
-        return _execute_files_query(self._service.files().create(body=file_metadata, fields=','.join([
+        return execute_query(self._service.files().create(body=file_metadata, fields=','.join([
             'id', 'name', 'webViewLink'
         ])))

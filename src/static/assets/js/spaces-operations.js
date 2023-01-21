@@ -93,6 +93,8 @@ async function addWriter(formEvent) {
                 alert('The user has already been added in this space as a writer.');
             }
             form.trigger('reset');
+        } else if (response.status === 422) {
+            alert('The format of the email ID is wrong. Please check if the email is typed correctly');
         } else {
             const data = await response.json();
             alert(`Error while adding writer, reason: ${data?.message ?? 'Unknown'}; Please reload the page.`);
@@ -189,4 +191,14 @@ $('input[type=file]').bind('change', function () {
         alert(messages.join('\n'));
         $(this).val('');
     }
+});
+
+$("#uploadDocumentForm").bind('submit', function () {
+    $('body').css('pointer-events', 'none');
+    $(`
+        <div class="alert alert-info">
+            Please wait while the file is uploaded. The <strong>page has been disabled</strong> for safety during upload. <br>
+            Please make sure your internet supports speeds of at least of 2mbps.
+        </div>
+    `).insertAfter("#space-files > div.alert:first-child").hide().show('slow');
 });

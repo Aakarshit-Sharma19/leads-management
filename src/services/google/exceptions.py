@@ -10,26 +10,43 @@ class BaseGoogleServiceException(Exception):
         return f'{self.__class__.__name__}: (errorId: f{self.error_id}) {self.message}'
 
 
-class GoogleAPIHttpError(BaseGoogleServiceException):
+class GoogleAPIHttpException(BaseGoogleServiceException):
     pass
 
 
-class MissingFolderStructure(BaseGoogleServiceException):
+# Drive API
+class MissingFolderStructureException(BaseGoogleServiceException):
     pass
 
 
-class StructureCreationFailed(BaseGoogleServiceException):
+class StructureCreationFailedException(BaseGoogleServiceException):
     pass
 
 
-class StructureDeletionFailed(BaseGoogleServiceException):
+class StructureDeletionFailedException(BaseGoogleServiceException):
     pass
 
-class DocumentDeletionFailed(BaseGoogleServiceException):
+
+class DocumentDeletionFailedException(BaseGoogleServiceException):
     pass
 
-class SocialTokenNotFound(BaseGoogleServiceException):
+
+class SocialTokenNotFoundException(BaseGoogleServiceException):
     pass
 
-class FileToDeleteNotFound(BaseGoogleServiceException):
+
+class FileToDeleteNotFoundException(BaseGoogleServiceException):
+    pass
+
+
+# Sheets API
+class InvalidDataException(BaseGoogleServiceException):
+    pass
+
+
+class EmptyRowException(BaseGoogleServiceException):
+    pass
+
+
+class EndOfFileException(Exception):
     pass
