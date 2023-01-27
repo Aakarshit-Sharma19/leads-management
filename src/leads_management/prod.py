@@ -35,7 +35,7 @@ if db_url:
         'default': dj_database_url.parse(db_url, ssl_require=False)
     }
 else:
-    logger.warning('DATABASE_URL not defined')
+    logger.error('Fatal Error: DATABASE_URL not defined. Reverting to SQLITE Database.')
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

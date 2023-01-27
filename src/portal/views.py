@@ -1,6 +1,7 @@
 import random
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
 from django.views.generic import TemplateView
 
 
@@ -15,3 +16,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
             request.COOKIES['seed'] = seed
             response.set_cookie('avatar_seed', seed)
         return response
+
+
+def health_view(request):
+    return HttpResponse('UP')
