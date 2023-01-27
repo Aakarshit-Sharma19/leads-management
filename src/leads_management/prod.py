@@ -1,15 +1,14 @@
-import logging
-import os
-from os import getenv
-
 import dj_database_url
-from django.core.management.utils import get_random_secret_key
+
 # noinspection PyUnresolvedReferences
 from leads_management.base_settings import *
 
 logger = logging.getLogger('settings')
 
-SECRET_KEY = getenv('SECRET_KEY', get_random_secret_key())
+SECRET_KEY = getenv('SECRET_KEY')
+if not SECRET_KEY:
+    logger.error("Fatal Error: SECRET_KEY not defined.")
+    raise AssertionError
 
 SECURE_HSTS_SECONDS = True
 SESSION_COOKIE_SECURE = True
@@ -36,9 +35,4 @@ if db_url:
     }
 else:
     logger.error('Fatal Error: DATABASE_URL not defined. Reverting to SQLITE Database.')
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+    raise AssertionError
