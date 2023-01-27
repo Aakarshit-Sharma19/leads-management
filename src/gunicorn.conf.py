@@ -3,11 +3,11 @@ import os
 
 workers = int(os.getenv("GUNICORN_WORKERS", 3))
 timeout = int(os.getenv("GUNICORN_TIMEOUT", 300))
-if os.getenv('ENABLE_HTTPS'):
+ENABLE_HTTPS = os.getenv('ENABLE_HTTPS')
+if ENABLE_HTTPS:
     keyfile = str(Path(__file__).parent / "certificates" / "key.pem")
     certfile = str(Path(__file__).parent / "certificates" / "certificate.pem")
-    os.environ['POST'] = '443'
 
-bind = f"0.0.0.0:{os.getenv('PORT', 8000)}"
+bind = f"0.0.0.0:{os.getenv('PORT', 8000) if not ENABLE_HTTPS else 443}"
 
 accesslog = '-'
