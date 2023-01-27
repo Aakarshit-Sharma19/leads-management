@@ -1,8 +1,7 @@
 from django.urls import path
 
-from portal.views import IndexView, health_view
+from portal.views import IndexView
 
 urlpatterns = [
-    path("", IndexView.as_view(), name='portal_index'),
-    path("health/", health_view, name='health')
+    path("", IndexView.as_view(), name='portal_index')
 ]
