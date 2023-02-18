@@ -41,7 +41,7 @@ jobs:
       - name: Check if AWS ECR repo exists
         id: check-ecr-repo
         run: |
-          aws ecr describe-repositories --repository-names $ECR_REPOSITORY ||
+          aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
           aws ecr create-repository --repository-name $ECR_REPOSITORY && \
           aws ecr set-repository-policy --repository-name $ECR_REPOSITORY $ECR_REPOSITORY_POLICY_TEXT
       - name: Build, tag, and push image to Amazon ECR
