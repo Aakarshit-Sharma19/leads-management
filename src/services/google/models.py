@@ -22,12 +22,13 @@ class StudentInfo(BaseModel):
 
 
 class StudentResponse(StudentInfo):
-    response = str
+    response: str
+    status: str = 'started'
 
     @classmethod
     def from_tuple(cls, values: tuple | list):
         """Not Implemented"""
-        raise NotImplementedError('StudentResponse does not instantiation from tuple')
+        raise NotImplementedError('StudentResponse does not instantiate from tuple')
 
     def to_tuple(self):
-        return [self.sno, self.name, self.phone_number, self.education, self.response]
+        return [self.sno, self.name, self.phone_number, self.education, self.response, self.status]

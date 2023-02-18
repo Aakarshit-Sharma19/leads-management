@@ -4,6 +4,7 @@ from django.core.management.utils import get_random_string
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from auditlog.registry import auditlog
 
 def get_random_string_60():
     return get_random_string(60)
@@ -59,3 +60,5 @@ class PortalUser(AbstractUser):
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = CustomUserManager()
+
+auditlog.register(PortalUser)

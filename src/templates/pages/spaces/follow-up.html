@@ -1,0 +1,107 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}
+    Dashboard - NiceAdmin Bootstrap Template
+{% endblock %}
+{% block content %}
+
+    {% include "common/header.html" %}
+
+    {% include "common/sidebar.html" %}
+
+    <main id="main" class="main">
+
+        <div class="pagetitle">
+            <h1>Follow ups of file {{ data_file.file_name }}</h1>
+        </div><!-- End Page Title -->
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">Space</li>
+                <li class="breadcrumb-item"><a href="{% url 'spaces_overview' space_id=space.pk %}">
+                    {{ space.owner.get_full_name }}
+                </a></li>
+                <li class="breadcrumb-item active">
+                    Follow Up
+                </li>
+            </ol>
+        </nav>
+
+        <section class="section profile">
+            <div class="row">
+
+                <div class="card">
+                    <div class="card-body pt-3">
+
+                        <div class=" pt-3" id="space-files">
+                            <!-- Profile Edit Form -->
+                            <table class="table">
+                                <caption hidden>Follow Up Table</caption>
+                                <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Phone Number</th>
+                                    <th scope="col">Education</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">View and Follow up</th>
+                                    <th scope="col">Resolve</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for student in students %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>
+                                            {{ student.name }}
+                                        </td>
+                                        <td>
+                                            {{ student.phone_number }}
+                                        </td>
+                                        <td>
+                                            {{ student.education }}
+                                        </td>
+                                        <td>
+                                            {{ student.get_status_display }}
+                                        </td>
+                                        <td>
+                                            <a target="_blank"
+                                               href="{% url 'spaces_follow_up_manage' space_id=space.id file_id=data_file.id student_id=student.id %}"
+                                               class="btn btn-outline-primary"> View Responses</a>
+                                        </td>
+                                        <td>
+                                            <form method="post"
+                                                    {% if not student.is_resolvable %}
+                                                  data-bs-toggle="tooltip"
+                                                  data-bs-placement="top"
+                                                  data-bs-original-title="This user cannot be resolved.
+                                                        Please update the status of the user to Admission Confirmed or Denied"
+                                                    {% endif %}
+                                                  action="{% url 'spaces_follow_up_resolve' space_id=space.id file_id=data_file.id student_id=student.id %}"
+                                            >
+                                                {% csrf_token %}
+                                                {{ resolve_form.as_p }}
+                                                <button class="btn btn-primary"
+                                                        {% if not student.is_resolvable %}
+                                                        disabled
+                                                        {% endif %}
+                                                        type="submit">Resolve
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    No follow ups as of now!
+                                {% endfor %}
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main><!-- End #main --
+{% endblock %}

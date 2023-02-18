@@ -2,7 +2,7 @@ from django import forms
 
 from authentication.models import PortalUser
 from document_spaces.validators import validate_google_xlsx_type, get_max_size_validator
-from leads_data.models import DocumentSpace
+from leads_data.models import DocumentSpace, Student
 
 
 class SpaceCreationConfirmationForm(forms.Form):
@@ -53,3 +53,50 @@ class SpaceDeleteFileForm(forms.Form):
     def clean_file_name(self):
         if self.expected_file_name != self.cleaned_data['file_name']:
             raise forms.ValidationError(self.error_messages['name_not_correct'], code='name_not_correct')
+
+
+class SpaceResponseSubmitForm(forms.Form):
+    response = forms.CharField(required=True,
+                               widget=forms.Textarea(
+                                   attrs={'class': 'form-control', 'placeholder': 'Enter student\'s response'}))
+    status = forms.ChoiceField(required=True,
+                               choices=Student.STATUS_CHOICES, widget=forms.Select(attrs={'class': 'form-select'}))
+
+
+class SpaceResponseUpdateForm(SpaceResponseSubmitForm):
+    pass
+
+
+class CreateSpaceUserForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.space: 'DocumentSpace' = kwargs.pop('space')
+        super().__init__(*args, **kwargs)
+
+    def save_user(self):
+        user: PortalUser = super().save(commit=False)
+        user.set_unusable_password()
+        user.save()
+        return user
+
+    class Meta:
+        model = PortalUser
+        fields = ('first_name', 'last_name', 'email')
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter First Name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Last Name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter Email'}),
+        }
+
+
+class CreateUserAsManagerForm(CreateSpaceUserForm):
+    def save(self, commit=True):
+        self.space.managers.add(self.save_user())
+
+
+class CreateUserAsWriterForm(CreateSpaceUserForm):
+    def save(self, commit=True):
+        self.space.writers.add(self.save_user())
+
+
+class ResolveEntryForm(forms.Form):
+    confirmation = forms.BooleanField(initial=True, widget=forms.HiddenInput())

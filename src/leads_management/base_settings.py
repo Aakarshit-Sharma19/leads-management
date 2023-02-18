@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 from pathlib import Path
-from os import getenv
 import logging
 
 from django.contrib.messages import constants as messages
@@ -44,6 +43,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
+    "auditlog",
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -63,6 +64,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "auditlog.middleware.AuditlogMiddleware",
+    "leads_management.middleware.ErrorHandlingMiddleware"
 ]
 
 ROOT_URLCONF = "leads_management.urls"

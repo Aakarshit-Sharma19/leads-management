@@ -1,4 +1,5 @@
 import dj_database_url
+from os import getenv
 
 # noinspection PyUnresolvedReferences
 from leads_management.base_settings import *
@@ -34,5 +35,5 @@ if db_url:
         'default': dj_database_url.parse(db_url, ssl_require=False)
     }
 else:
-    logger.error('Fatal Error: DATABASE_URL not defined. Reverting to SQLITE Database.')
+    logger.error('Fatal Error: DATABASE_URL not defined.')
     raise AssertionError

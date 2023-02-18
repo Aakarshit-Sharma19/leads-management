@@ -18,167 +18,63 @@
 
         <section class="section dashboard">
             <div class="row">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card info-card">
-                            <div class="card-body p-2 d-flex justify-content-center">
-                                <img class="align-self-center" width="400" src="{% static "assets/img/work-in-progress.png" %}"
-                                     alt="Work in Progress">
-                            </div>
-                            <div class="card-footer d-flex justify-content-center">
-                                <p>
-                                    This page is not yet functional. Please head over to spaces section.
-                                </p>
-                            </div>
-                        </div>
+                <div class="card info-card ">
+                    <div class="card-body justify-content-center">
+                        <h4 class="card-title">
+                            Welcome to the Portal 💐.
+                        </h4>
+                        Select spaces section on the left sidebar to continue.
                     </div>
                 </div>
             </div>
-            <div class="row" hidden="hidden">
+            <div class="row">
 
-                <div class="row">
-
-                    <!-- Sales Card -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card info-card sales-card">
-
+                {% if user.is_superuser %}
+                    <div class="row">
+                        <div class="card">
 
                             <div class="card-body">
-                                <h5 class="card-title">Sales <span>| Today</span></h5>
+                                <h5 class="card-title">Recent Activity <span>Latest 50 | <strong>Make sure to delete older entries.</strong> -> <a
+                                        href="{% url 'portal_recent_activity' %}">See All and Manage</a> </span></h5>
 
-                                <div class="d-flex align-items-center">
-                                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-cart"></i>
+                                <form method="post" action="{% url 'portal_recent_activity' %}">
+                                    {% csrf_token %}
+                                    <div class="row mb-3">
+                                        <label for="{{ form.timeframe.id_for_label }}" class="col-md-3 col-form-label">{{ form.timeframe.label }}</label>
+                                        <div class="col-md-5">
+                                            <input type="date" id="{{ form.timeframe.id_for_label }}" name="timeframe" class="form-control" required>
+                                        </div>
+                                        <button class="btn btn-warning col-md-4" type="submit">Delete the entries</button>
                                     </div>
-                                    <div class="ps-3">
-                                        <h6>145</h6>
-                                        <span class="text-success small pt-1 fw-bold">12%</span> <span
-                                            class="text-muted small pt-2 ps-1">increase</span>
+                                </form>
+                                <div class="activity">
 
-                                    </div>
-                                </div>
-                            </div>
+                                    {% for log_entry in log_entries %}
+                                        <div class="activity-item d-flex">
+                                            <div class="activite-label"
+                                                 style="padding-right: 5px">{{ log_entry.timestamp | timesince }}</div>
+                                            <i class='bi bi-circle-fill activity-badge text-info align-self-start'></i>
+                                            <div class="activity-content">
+                                                {{ log_entry.actor }} {{ log_entry }} <a
+                                                    href="admin/auditlog/logentry/{{ log_entry.pk }}/change/">See
+                                                details..</a>
+                                            </div>
+                                        </div><!-- End activity item-->
+                                    {% empty %}
+                                        <p>
+                                            Everything is clear 🙂
+                                        </p>
 
-                        </div>
-                    </div><!-- End Sales Card -->
+                                    {% endfor %}
 
-                    <!-- Revenue Card -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card info-card revenue-card">
-
-
-                            <div class="card-body">
-                                <h5 class="card-title">Revenue <span>| This Month</span></h5>
-
-                                <div class="d-flex align-items-center">
-                                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-currency-dollar"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>$3,264</h6>
-                                        <span class="text-success small pt-1 fw-bold">8%</span> <span
-                                            class="text-muted small pt-2 ps-1">increase</span>
-
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div><!-- End Revenue Card -->
-
-                    <!-- Customers Card -->
-                    <div class="col-lg-4 col-md-6">
-
-                        <div class="card info-card customers-card">
-
-
-                            <div class="card-body">
-                                <h5 class="card-title">Customers <span>| This Year</span></h5>
-
-                                <div class="d-flex align-items-center">
-                                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-people"></i>
-                                    </div>
-                                    <div class="ps-3">
-                                        <h6>1244</h6>
-                                        <span class="text-danger small pt-1 fw-bold">12%</span> <span
-                                            class="text-muted small pt-2 ps-1">decrease</span>
-
-                                    </div>
                                 </div>
 
                             </div>
-                        </div>
+                        </div><!-- End Recent Activity -->
 
-                    </div><!-- End Customers Card -->
+                    </div>
 
-                </div>
-
-
-                <div class="row">
-                    <div class="card">
-
-                        <div class="card-body">
-                            <h5 class="card-title">Recent Activity <span>| Today</span></h5>
-
-                            <div class="activity">
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">32 min</div>
-                                    <i class='bi bi-circle-fill activity-badge text-success align-self-start'></i>
-                                    <div class="activity-content">
-                                        Quia quae rerum <a href="#" class="fw-bold text-dark">explicabo officiis</a>
-                                        beatae
-                                    </div>
-                                </div><!-- End activity item-->
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">56 min</div>
-                                    <i class='bi bi-circle-fill activity-badge text-danger align-self-start'></i>
-                                    <div class="activity-content">
-                                        Voluptatem blanditiis blanditiis eveniet
-                                    </div>
-                                </div><!-- End activity item-->
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">2 hrs</div>
-                                    <i class='bi bi-circle-fill activity-badge text-primary align-self-start'></i>
-                                    <div class="activity-content">
-                                        Voluptates corrupti molestias voluptatem
-                                    </div>
-                                </div><!-- End activity item-->
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">1 day</div>
-                                    <i class='bi bi-circle-fill activity-badge text-info align-self-start'></i>
-                                    <div class="activity-content">
-                                        Tempore autem saepe <a href="#" class="fw-bold text-dark">occaecati
-                                        voluptatem</a> tempore
-                                    </div>
-                                </div><!-- End activity item-->
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">2 days</div>
-                                    <i class='bi bi-circle-fill activity-badge text-warning align-self-start'></i>
-                                    <div class="activity-content">
-                                        Est sit eum reiciendis exercitationem
-                                    </div>
-                                </div><!-- End activity item-->
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">4 weeks</div>
-                                    <i class='bi bi-circle-fill activity-badge text-muted align-self-start'></i>
-                                    <div class="activity-content">
-                                        Dicta dolorem harum nulla eius. Ut quidem quidem sit quas
-                                    </div>
-                                </div><!-- End activity item-->
-
-                            </div>
-
-                        </div>
-                    </div><!-- End Recent Activity -->
-
-                </div>
+                {% endif %}
 
             </div>
         </section>

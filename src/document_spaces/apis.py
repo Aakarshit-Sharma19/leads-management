@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from ninja import NinjaAPI
 from ninja.security import django_auth
 
+from authentication.models import PortalUser
 from document_spaces.schemas import ManagerRequest, WriterRequest, ErrorResponse
 from leads_data.models import DocumentSpace
 
@@ -18,7 +19,7 @@ def add_manager_to_space(request, manager_req: ManagerRequest):
         return 403, {'message': 'You are not authorized to make changes to the space'}
     space: DocumentSpace = request.auth.owner_of_space
     try:
-        manager = User.objects.get(email=manager_req.email)
+        manager: "PortalUser" = User.objects.get(email=manager_req.email)
         if manager.is_space_owner:
             return 400, {'message': 'The user who is an owner of a space cannot be added to the other space as manager.'}
     except User.DoesNotExist:
@@ -45,10 +46,12 @@ def remove_manager_from_space(request, manager_req: ManagerRequest):
         return 403, {'message': 'You are not authorized to make changes to the space'}
     space: DocumentSpace = request.auth.owner_of_space
     try:
-        manager = User.objects.get(email=manager_req.email)
+        manager: "PortalUser" = User.objects.get(email=manager_req.email)
     except User.DoesNotExist:
         return 400, {'message': 'The user does not exist'}
     space.managers.remove(manager)
+    if manager_req.deletePermanently:
+        manager.delete()
     return {
         'message': f'The user {manager.get_full_name()} has been successfully removed from your space',
     }
@@ -62,7 +65,7 @@ def add_writer_to_space(request, writer_req: WriterRequest):
 
     space: DocumentSpace = request.auth.owner_of_space
     try:
-        writer = User.objects.get(email=writer_req.email)
+        writer: "PortalUser" = User.objects.get(email=writer_req.email)
         if writer.is_space_owner:
             return 400, {'message': 'The user who is an owner of a space cannot be added to the other space as writer.'}
     except User.DoesNotExist:
@@ -91,10 +94,12 @@ def remove_writer_from_space(request, writer_req: WriterRequest):
         return 403, {'message': 'You are not authorized to make changes to the space'}
     space: DocumentSpace = request.auth.owner_of_space
     try:
-        writer = User.objects.get(email=writer_req.email)
+        writer: "PortalUser" = User.objects.get(email=writer_req.email)
     except User.DoesNotExist:
         return 400, {'message': 'The user does not exist'}
     space.writers.remove(writer)
+    if writer_req.deletePermanently:
+        writer.delete()
     return {
         'message': f'The user {writer.get_full_name()} has been successfully removed from your space',
     }

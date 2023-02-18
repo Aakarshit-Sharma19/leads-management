@@ -2,9 +2,11 @@ from os import getenv
 import logging
 
 logger = logging.getLogger('settings')
+from os import getenv
 
 import dj_database_url
 
+# noinspection PyUnresolvedReferences
 from leads_management.base_settings import *
 
 # Quick-start development settings - unsuitable for production

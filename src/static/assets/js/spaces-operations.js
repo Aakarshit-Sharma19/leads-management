@@ -30,7 +30,15 @@ async function addManager(formEvent) {
                                 table-row-id="#managers-entry-${newIndex}"
                                 email="${data.user?.email}"
                                 onclick="removeManager(this)"
-                        >Delete
+                        >Remove
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger"
+                                table-row-id="#managers-entry-${newIndex}"
+                                email="${data.user?.email}"
+                                onclick="removeManager(this, true)"
+                        >Remove and Delete
                         </button>
                     </td>
                 </tr>
@@ -82,7 +90,15 @@ async function addWriter(formEvent) {
                                 table-row-id="#writers-entry-${newIndex}"
                                 email="${data.user?.email}"
                                 onclick="removeWriter(this)"
-                        >Delete
+                        >Remove
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger"
+                                table-row-id="#writers-entry-${newIndex}"
+                                email="${data.user?.email}"
+                                onclick="removeWriter(this, true)"
+                        >Delete and Remove
                         </button>
                     </td>
                 </tr>
@@ -106,18 +122,19 @@ async function addWriter(formEvent) {
     }
 }
 
-async function removeManager(entryButtonElement) {
+async function removeManager(entryButtonElement, deletePermanently) {
     const managerEmail = $(entryButtonElement).attr('email');
     const tbody = document.querySelector('#managers-table tbody');
     const url = $(tbody).attr('action-url');
     const tableRowId = $(entryButtonElement).attr('table-row-id');
 
-    const consent = window.confirm(`Do you want to remove this user ${managerEmail} from this space`);
+    const consent = window.confirm(`Do you want to remove this user ${managerEmail} from this space. ${deletePermanently ? 'This user will be deleted permanently' : ''}`);
     if (consent) {
         try {
             const response = await fetch(url, {
                 method: 'DELETE', body: JSON.stringify({
-                    email: managerEmail
+                    email: managerEmail,
+                    deletePermanently: deletePermanently
                 }), mode: 'same-origin', headers: {
                     'Content-Type': 'application/json', 'X-CSRFToken': csrfToken
                 }
@@ -137,18 +154,19 @@ async function removeManager(entryButtonElement) {
     }
 }
 
-async function removeWriter(entryButtonElement) {
+async function removeWriter(entryButtonElement, deletePermanently) {
     const writerEmail = $(entryButtonElement).attr('email');
     const tbody = document.querySelector('#writers-table tbody');
     const url = $(tbody).attr('action-url');
     const tableRowId = $(entryButtonElement).attr('table-row-id');
 
-    const consent = window.confirm(`Do you want to remove this user ${writerEmail} from this space`);
+    const consent = window.confirm(`Do you want to remove this user ${writerEmail} from this space. ${deletePermanently ? 'This user will be deleted permanently' : ''}`);
     if (consent) {
         try {
             const response = await fetch(url, {
                 method: 'DELETE', body: JSON.stringify({
-                    email: writerEmail
+                    email: writerEmail,
+                    deletePermanently: deletePermanently
                 }), mode: 'same-origin', headers: {
                     'Content-Type': 'application/json', 'X-CSRFToken': csrfToken
                 }

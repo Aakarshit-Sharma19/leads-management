@@ -28,8 +28,14 @@
     <main id="main" class="main">
 
         <div class="pagetitle">
-            <h1>Space Overview of {{ space.owner.get_full_name }}</h1>
+            <h1>Space Overview </h1>
         </div><!-- End Page Title -->
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">Space</li>
+                <li class="breadcrumb-item active">{{ space.owner.get_full_name }}</li>
+            </ol>
+        </nav>
 
         <section class="section profile">
             <div class="row">
@@ -61,6 +67,13 @@
                                     Files
                                 </button>
                             </li>
+                            {% if user.is_space_owner %}
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#space-admin">
+                                        Admin settings
+                                    </button>
+                                </li>
+                            {% endif %}
 
                         </ul>
                         <div class="tab-content pt-2">
@@ -109,7 +122,8 @@
                                         <th scope="col">Name</th>
                                         <th scope="col">Email</th>
                                         {% if user.is_space_owner %}
-                                            <th scope="col">Delete</th>
+                                            <th scope="col">Remove</th>
+                                            <th scope="col">Remove and Delete</th>
                                         {% endif %}
                                     </tr>
                                     </thead>
@@ -124,9 +138,18 @@
                                                     <button class="btn btn-danger"
                                                             table-row-id="#managers-entry-{{ forloop.counter }}"
                                                             email="{{ manager.email }}"
-                                                            onclick="removeManager(this)"
-                                                    >Delete
+                                                            onclick="removeManager(this, false)"
+                                                    >Remove
                                                     </button>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-danger"
+                                                            table-row-id="#managers-entry-{{ forloop.counter }}"
+                                                            email="{{ manager.email }}"
+                                                            onclick="removeManager(this, true)"
+                                                    >Remove and Delete
+                                                    </button>
+
                                                 </td>
                                             {% endif %}
                                         </tr>
@@ -137,7 +160,6 @@
                                     </tbody>
                                 </table>
                             </div>
-
                             <div class="tab-pane fade profile-edit pt-3" id="space-writers">
                                 {% if user.is_space_owner %}
                                     <form id="addWriterForm" action="{% url 'spaces_api:spaces_writer' %}">
@@ -169,7 +191,8 @@
                                         <th scope="col">Name</th>
                                         <th scope="col">Email</th>
                                         {% if user.is_space_owner %}
-                                            <th scope="col">Delete</th>
+                                            <th scope="col">Remove</th>
+                                            <th scope="col">Remove and Delete</th>
                                         {% endif %}
                                     </tr>
                                     </thead>
@@ -182,11 +205,18 @@
                                             {% if user.is_space_owner %}
                                                 <td>
                                                     <button class="btn btn-danger"
-
                                                             table-row-id="#writers-entry-{{ forloop.counter }}"
                                                             email="{{ writer.email }}"
-                                                            onclick="removeWriter(this)"
-                                                    >Delete
+                                                            onclick="removeWriter(this, false)"
+                                                    >Remove
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-danger"
+                                                            table-row-id="#writers-entry-{{ forloop.counter }}"
+                                                            email="{{ writer.email }}"
+                                                            onclick="removeWriter(this, true)"
+                                                    >Remove and Delete User
                                                     </button>
                                                 </td>
                                             {% endif %}
@@ -199,14 +229,13 @@
                                 </table>
 
                             </div>
-
                             <div class="tab-pane fade profile-edit pt-3" id="space-files">
                                 {% if fileUploadForm %}
                                     <div class="alert alert-warning">
                                         The size of the should not exceed 24MBs.
                                     </div>
                                     <form id="uploadDocumentForm" class="row mb-3"
-                                          action="{% url 'spaces_file_upload' pk=space.pk %}"
+                                          action="{% url 'spaces_file_upload' space_id=space.pk %}"
                                           enctype="multipart/form-data" method="post">
                                         {% csrf_token %}
                                         <label for="" class="col-sm-12 col-md-3">Document</label>
@@ -226,6 +255,8 @@
                                     <tr>
                                         <th scope="col">#</th>
                                         <th scope="col">Name</th>
+                                        <th scope="col">Add Entry</th>
+                                        <th scope="col">Follow Up</th>
                                         {% if user.is_space_owner %}
                                             <th scope="col">Data</th>
                                             <th scope="col">Responses</th>
@@ -238,6 +269,17 @@
                                         <tr>
                                             <th scope="row">{{ forloop.counter }}</th>
                                             <td>{{ file.file_name }}</td>
+
+                                            <td>
+                                                <a target="_blank"
+                                                   href="{% url 'spaces_submit_entry' space_id=space.pk file_id=file.pk %}"
+                                                   class="btn btn-outline-primary"> Add Response</a>
+                                            </td>
+                                            <td>
+                                                <a target="_blank"
+                                                   href="{% url 'spaces_follow_up' space_id=space.pk file_id=file.pk %}"
+                                                   class="btn btn-outline-primary"> Follow Up </a>
+                                            </td>
                                             {% if user.is_space_owner %}
                                                 <td>
                                                     {% if file.web_content_link %}
@@ -254,7 +296,7 @@
                                                 </td>
                                                 <td>
                                                     <a class="btn btn-outline-danger"
-                                                       href="{% url  'spaces_file_delete' space_pk=space.pk pk=file.pk %}">
+                                                       href="{% url  'spaces_file_delete' space_id=space.pk file_id=file.pk %}">
                                                         Delete
                                                     </a>
                                                 </td>
@@ -267,8 +309,60 @@
 
                                     </tbody>
                                 </table>
-
                             </div>
+                            {% if user.is_space_owner %}
+                                <div class="tab-pane fade profile-edit pt-3" id="space-admin">
+                                    <div class="alert alert-info">
+                                        You can directly create a new user and add it as a manager or a writer.
+                                        To add an already existing user, please use Add Field in Writers or Managers
+                                        tab.
+                                    </div>
+                                    <div class="card-title">
+                                        Create new User and add it to space as Manager
+
+                                        <form method="post" action="{% url 'spaces_create_manager' space_id=space.pk %}"
+                                              class="mt-2">
+                                            {% csrf_token %}
+                                            {% for form_field in createUserAsManagerForm %}
+                                                <div class="row mb-1">
+                                                    <label for="{{ form_field.id_for_label }}"
+                                                           class="col-3 col-form-label-sm">
+                                                        {{ form_field.label }}
+                                                    </label>
+                                                    <div class="col-9">
+                                                        {{ form_field }}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                            <button class="btn btn-primary" type="submit">
+                                                Create
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div class="card-title">
+                                        Create new User and add it to space as Writer
+                                        <form method="post" action="{% url 'spaces_create_writer' space_id=space.pk %}"
+                                              class="mt-2">
+                                            {% csrf_token %}
+                                            {% for form_field in createUserAsWriterForm %}
+                                                <div class="row mb-1">
+                                                    <label for="{{ form_field.id_for_label }}"
+                                                           class="col-3 col-form-label-sm">
+                                                        {{ form_field.label }}
+                                                    </label>
+                                                    <div class="col-9">
+                                                        {{ form_field }}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                            <button class="btn btn-primary" type="submit">
+                                                Create
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                            {% endif %}
 
                         </div><!-- End Bordered Tabs -->
 
