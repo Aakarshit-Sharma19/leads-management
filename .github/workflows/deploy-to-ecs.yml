@@ -9,7 +9,7 @@ on:
 env:
   AWS_REGION: ap-south-1                   # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: leads-management           # set this to your Amazon ECR repository name
-  ECR_REPOSITORY_POLICY_TEXT: file://.aws/ecr/repository-policy-json
+  ECR_REPOSITORY_POLICY_TEXT_PATH: .aws/ecr/repository-policy.json
   ECS_TASK_DEFINITION: ./.aws/task-definition.json
   CONTAINER_NAME: leads-management
 
@@ -40,10 +40,14 @@ jobs:
 
       - name: Check if AWS ECR repo exists
         id: check-ecr-repo
+        env:
+          ECR_POLICY_TEXT_ABS_PATH: file://${{github.workspace}}/${{env.ECR_REPOSITORY_POLICY_TEXT_PATH}}
         run: |
+          # Check if ECR Repository exists
+          # If not then create it and set ecr policy
           aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
           aws ecr create-repository --repository-name $ECR_REPOSITORY && \
-          aws ecr set-repository-policy --repository-name $ECR_REPOSITORY $ECR_REPOSITORY_POLICY_TEXT
+          aws ecr set-repository-policy --repository-name $ECR_REPOSITORY --policy-text $ECR_POLICY_TEXT_ABS_PATH
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
