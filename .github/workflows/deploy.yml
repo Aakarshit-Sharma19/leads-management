@@ -1,0 +1,76 @@
+name: Build and Deploy to ECS
+
+on:
+  push:
+    branches:
+      - wip
+      - master
+env:
+  AWS_REGION: ap-south-1                   # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: leads-management           # set this to your Amazon ECR repository name
+  ECS_TASK_DEFINITION: ./.aws/task-definition.json
+  CONTAINER_NAME: ${{ github.event.repository.name }}
+  PROJECT_NAME: ${{ github.event.repository.name }}
+
+
+permissions:
+  id-token: write # required to use OIDC authentication
+  contents: read # required to checkout the code from the repo
+
+jobs:
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3.3.0
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::129190006344:role/Github-Actions
+          role-duration-seconds: 900 # the ttl of the session, in seconds.
+          aws-region: ap-south-1 # use your region here.
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Sync AWS deployment config files
+        id: sync-deployment-files
+        run: |
+          aws s3 sync .aws/ s3://techoon-global-config/deployments/${{ env.PROJECT_NAME }}
+
+      - name: Ensure ECR Repository
+        id: ensure-ecr-repository
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: ecr-repository-${{ env.PROJECT_NAME }}
+          template: https://techoon-global-config.s3.ap-south-1.amazonaws.com/deployments/${{ env.PROJECT_NAME }}/cf/ecr.yaml
+          parameter-overrides: RepositoryName=${{ env.ECR_REPOSITORY }}
+          no-fail-on-empty-changeset: "1"
+          termination-protection: "1"
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ steps.ensure-ecr-repository.outputs.RepositoryUri }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Deploy cloudformation stack
+        id: deploy-cloudformation-stack
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: ${{ env.PROJECT_NAME }}-stack
+          template: https://techoon-global-config.s3.ap-south-1.amazonaws.com/deployments/${{ env.PROJECT_NAME }}/cf/master.yaml
+          parameter-overrides: ProjectName=${{ env.PROJECT_NAME }},ECRImage=${{ steps.build-image.outputs.image }}
+          no-fail-on-empty-changeset: "1"
+          termination-protection: "1"

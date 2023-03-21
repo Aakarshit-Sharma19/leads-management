@@ -1,4 +1,3 @@
-from os import getenv
 import logging
 
 logger = logging.getLogger('settings')
@@ -7,7 +6,7 @@ from os import getenv
 import dj_database_url
 
 # noinspection PyUnresolvedReferences
-from leads_management.base_settings import *
+from leads_management.settings.base_settings import *
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -32,5 +31,3 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-
-logger.info(f'Using DATABASE ENGINE', DATABASES['default']['ENGINE'])

@@ -1,8 +1,8 @@
-import dj_database_url
 from os import getenv
 
 # noinspection PyUnresolvedReferences
-from leads_management.base_settings import *
+from leads_management.settings.base_settings import *
+from leads_management.settings.secrets_utils import DB_CREDENTIALS
 
 logger = logging.getLogger('settings')
 
@@ -25,15 +25,14 @@ logger.warning(f'CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}')
 # Allauth
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
-DEBUG = False
-if os.getenv('ENABLE_DEBUG'):
-    DEBUG = True
-
-db_url = getenv('DATABASE_URL')
-if db_url:
-    DATABASES = {
-        'default': dj_database_url.parse(db_url, ssl_require=False)
+DEBUG = bool(os.getenv('ENABLE_DEBUG'))
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'leads_management_database'),
+        'USER': DB_CREDENTIALS['username'],
+        'PASSWORD': DB_CREDENTIALS['password'],
+        'HOST': getenv('DB_HOST'),
+        'PORT': getenv('DB_PORT', '5432'),
     }
-else:
-    logger.error('Fatal Error: DATABASE_URL not defined.')
-    raise AssertionError
+}
