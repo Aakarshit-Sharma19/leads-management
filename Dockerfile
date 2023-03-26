@@ -23,7 +23,8 @@ WORKDIR /app
 
 COPY requirements.txt .
 COPY --from=builder /app/wheels /wheels
-RUN apk add --no-cache libpq && \
+# curl for health check
+RUN apk add --no-cache libpq curl && \
      pip install --no-cache /wheels/*
 RUN rm requirements.txt
 
