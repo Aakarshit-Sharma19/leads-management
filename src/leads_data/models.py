@@ -50,6 +50,7 @@ class Student(models.Model):
     data_file = models.ForeignKey(DataFile, related_name='approached_individuals', on_delete=models.CASCADE)
     row_no = models.IntegerField(blank=False, null=False)
     name = models.CharField(max_length=50)
+    parent_name = models.CharField(max_length=50)
     phone_number = models.CharField(max_length=14)
     education = models.CharField(max_length=200)
     status = models.CharField(choices=STATUS_CHOICES, max_length=14, default="started")

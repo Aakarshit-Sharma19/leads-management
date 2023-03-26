@@ -9,7 +9,7 @@
         <script>
             var csrfToken = "{{ csrf_token }}";
         </script>
-        <script src="{% static 'assets/js/spaces-operations.js' %}"></script>
+        <script src="{% static 'assets/js/spaces-admin-operations.js' %}"></script>
         <script>
             $('form#addManagerForm')[0].addEventListener('submit', addManager);
             $('form#addWriterForm')[0].addEventListener('submit', addWriter);
@@ -18,6 +18,7 @@
             {% endif %}
         </script>
     {% endif %}
+    <script src="{% static 'assets/js/space-operations.js' %}" ></script>
 {% endblock %}
 {% block content %}
 

@@ -29,7 +29,7 @@ class SheetsService:
             self._service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=row_range))
         rows = result.get('values')
         row = rows[0]
-        if len(row) == 0:
+        if not row or len(row) == 0:
             raise service_exceptions.EmptyRowException(message='Row is empty')
         if len(row) != 4:
             raise service_exceptions.InvalidDataException(
@@ -75,8 +75,8 @@ class SheetsService:
                                                                        body={
                                                                            'majorDimension': 'ROWS',
                                                                            'values': [[
-                                                                               'S.No',
                                                                                'Name',
+                                                                               'Parent\'s Name',
                                                                                'Phone Number',
                                                                                'Education',
                                                                                'Latest Response',

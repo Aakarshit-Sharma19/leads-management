@@ -4,8 +4,8 @@ from pydantic import BaseModel, validator
 
 
 class StudentInfo(BaseModel):
-    sno: str
     name: str
+    parent_name: str
     phone_number: str
     education: str
 
@@ -18,7 +18,7 @@ class StudentInfo(BaseModel):
 
     @classmethod
     def from_tuple(cls, values: tuple | list):
-        return cls(sno=values[0], name=values[1], phone_number=values[2], education=values[3])
+        return cls(name=values[0], parent_name=values[1], phone_number=values[2], education=values[3])
 
 
 class StudentResponse(StudentInfo):
@@ -31,4 +31,4 @@ class StudentResponse(StudentInfo):
         raise NotImplementedError('StudentResponse does not instantiate from tuple')
 
     def to_tuple(self):
-        return [self.sno, self.name, self.phone_number, self.education, self.response, self.status]
+        return [self.name, self.parent_name, self.phone_number, self.education, self.response, self.status]

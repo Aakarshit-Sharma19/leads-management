@@ -88,6 +88,7 @@ class SpaceResponseSubmitView(LoginRequiredMixin, UserPassesTestMixin, FormView)
             kwargs.update({
                 'valid': True,
                 'name': student_info.name,
+                'parent_name': student_info.parent_name,
                 'phone_number': student_info.phone_number,
                 'education': student_info.education,
             })
@@ -104,6 +105,7 @@ class SpaceResponseSubmitView(LoginRequiredMixin, UserPassesTestMixin, FormView)
             student_info = sheets_service.read_student_info_from_row(self.data_file.file_id, self.data_file.current_row)
             individual = self.data_file.approached_individuals.create(row_no=self.data_file.current_row,
                                                                       name=student_info.name,
+                                                                      parent_name=student_info.parent_name,
                                                                       phone_number=student_info.phone_number,
                                                                       education=student_info.education,
                                                                       status=form.cleaned_data['status'])
