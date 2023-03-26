@@ -67,6 +67,7 @@ class SpaceOverviewView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         kwargs = super().get_context_data(**kwargs)
         if self.request.user.is_space_owner or self.object.managers.filter(pk=self.request.user.pk).exists():
             kwargs['fileUploadForm'] = forms.SpaceUploadFileForm(user=self.request.user, space=self.object)
+            kwargs['can_manage'] = True
         if self.request.user.is_space_owner:
             kwargs.update({
                 'createUserAsManagerForm': forms.CreateUserAsManagerForm(space=self.object),

@@ -258,9 +258,11 @@
                                         <th scope="col">Name</th>
                                         <th scope="col">Add Entry</th>
                                         <th scope="col">Follow Up</th>
-                                        {% if user.is_space_owner %}
+                                        {% if can_manage %}
                                             <th scope="col">Data</th>
                                             <th scope="col">Responses</th>
+                                        {% endif %}
+                                        {% if user.is_space_owner %}
                                             <th scope="col">Delete</th>
                                         {% endif %}
                                     </tr>
@@ -281,7 +283,7 @@
                                                    href="{% url 'spaces_follow_up' space_id=space.pk file_id=file.pk %}"
                                                    class="btn btn-outline-primary"> Follow Up </a>
                                             </td>
-                                            {% if user.is_space_owner %}
+                                            {% if can_manage %}
                                                 <td>
                                                     {% if file.web_content_link %}
                                                         <a target="_blank" href="{{ file.web_content_link }}"
@@ -295,6 +297,8 @@
                                                            class="btn btn-outline-primary">Open Responses</a>
                                                     {% endif %}
                                                 </td>
+                                            {% endif %}
+                                            {% if user.is_space_owner %}
                                                 <td>
                                                     <a class="btn btn-outline-danger"
                                                        href="{% url  'spaces_file_delete' space_id=space.pk file_id=file.pk %}">
