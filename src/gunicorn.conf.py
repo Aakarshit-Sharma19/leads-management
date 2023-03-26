@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 
-workers = int(os.getenv("GUNICORN_WORKERS", 3))
+workers = int(os.getenv("GUNICORN_WORKERS", 2))
 timeout = int(os.getenv("GUNICORN_TIMEOUT", 300))
 ENABLE_HTTPS = os.getenv('ENABLE_HTTPS')
 if ENABLE_HTTPS:
