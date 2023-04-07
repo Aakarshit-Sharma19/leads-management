@@ -1,4 +1,4 @@
-Django==4.1.6
+Django==4.2
 boto3-stubs==1.26.58
 boto3==1.26.58
 botocore-stubs==1.29.58
@@ -15,3 +15,4 @@ humanize==4.4.0
 psycopg2==2.9.5
 whitenoise==6.3.0
 django-auditlog==2.2.2
+aws-secretsmanager-caching==1.1.1.5
