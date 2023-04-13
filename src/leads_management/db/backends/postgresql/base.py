@@ -44,13 +44,13 @@ class DatabaseWrapper(base.DatabaseWrapper):
 
     def get_new_connection(self, conn_params):
         try:
-            logger.info("trying to get connection")
+            logger.debug("trying to get connection")
             database_credentials.get_conn_params_from_secrets_manager(conn_params)
             return super(DatabaseWrapper, self).get_new_connection(conn_params)
         except psycopg2.OperationalError as e:
             if f'FATAL:  password authentication failed for user "{conn_params["user"]}"' not in str(e):
                 raise e
-            logger.info("Authentication error. Going to refresh secret and try again.")
+            logger.info("Database authentication error. Going to refresh secret and try again.")
             database_credentials.refresh_now()
             database_credentials.get_conn_params_from_secrets_manager(conn_params)
             conn = super(DatabaseWrapper, self).get_new_connection(conn_params)

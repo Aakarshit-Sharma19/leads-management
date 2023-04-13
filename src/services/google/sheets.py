@@ -23,11 +23,11 @@ class SheetsService:
 
     def read_student_info_from_row(self, spreadsheet_id: str, row_index: int) -> 'StudentInfo':
         if row_index == 0:
-            row_index = row_index + 1
+            row_index += 1
         row_range = f"A{row_index}:D{row_index}"
         result: "ValueRange" = execute_query(
             self._service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=row_range))
-        rows = result.get('values')
+        rows = result.get('values', [None])
         row = rows[0]
         if not row or len(row) == 0:
             raise service_exceptions.EmptyRowException(message='Row is empty')
@@ -46,13 +46,13 @@ class SheetsService:
     def get_next_populated_row(self, spreadsheet_id: str, start_index: int, end_index: int) -> \
             'typing.Tuple[int, StudentInfo]':
         if start_index == 0:
-            start_index = start_index + 1
+            start_index += 1
         row_range = f"A{start_index}:D{end_index}"
         result: "ValueRange" = execute_query(
             self._service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=row_range))
-        rows = result.get('values')
+        rows = result.get('values', [None])
         for i, row in enumerate(rows):
-            if len(row) > 0:
+            if row and len(row) > 0:
                 if len(row) != 4:
                     raise service_exceptions.InvalidDataException(
                         message=f'The data present in the file is invalid.'
