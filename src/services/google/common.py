@@ -1,5 +1,6 @@
 import typing
 
+from google.auth.exceptions import RefreshError
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 
@@ -14,7 +15,12 @@ if typing.TYPE_CHECKING:
 def execute_query(request: "HttpRequest", raise_404=False):
     try:
         return request.execute()
-    except HttpError as e:
+    except (HttpError, RefreshError) as e:
+        if isinstance(e, RefreshError):
+            raise service_exceptions.GoogleAPIHttpException(
+                message='Google credentials have expired.'
+                        ' The owner of the space should be notified to re-login to the portal with Google.'
+                        'If the issue persists, contact the portal admin.') from e
         if e.resp.status == 404 and raise_404:
             raise e
         if e.resp.status == 401:
