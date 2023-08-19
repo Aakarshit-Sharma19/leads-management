@@ -11,6 +11,7 @@ env:
   ECS_TASK_DEFINITION: ./.aws/task-definition.json
   CONTAINER_NAME: ${{ github.event.repository.name }}
   PROJECT_NAME: ${{ github.event.repository.name }}
+  PROJECT_DEPLOYMENTS_S3_URL: https://${{ vars.BUCKET_NAME }}.s3.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.DEPLOYMENTS_PATH }}/${{ github.event.repository.name }}
 
 
 permissions:
@@ -39,14 +40,14 @@ jobs:
       - name: Sync AWS deployment config files
         id: sync-deployment-files
         run: |
-          aws s3 sync .aws/ s3://techoon-global-config/deployments/${{ env.PROJECT_NAME }}
+          aws s3 sync .aws/ s3://${{ vars.BUCKET_NAME }}/${{ vars.DEPLOYMENTS_PATH }}/${{ env.PROJECT_NAME }}
 
       - name: Ensure ECR Repository
         id: ensure-ecr-repository
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: ecr-repository-${{ env.PROJECT_NAME }}
-          template: https://techoon-global-config.s3.ap-south-1.amazonaws.com/deployments/${{ env.PROJECT_NAME }}/cf/ecr.yaml
+          template: ${{ env.PROJECT_DEPLOYMENTS_S3_URL }}/cf/ecr.yaml
           parameter-overrides: RepositoryName=${{ env.ECR_REPOSITORY }}
           no-fail-on-empty-changeset: "1"
           termination-protection: "1"
@@ -71,6 +72,6 @@ jobs:
         with:
           name: ${{ env.PROJECT_NAME }}-stack
           template: https://techoon-global-config.s3.ap-south-1.amazonaws.com/deployments/${{ env.PROJECT_NAME }}/cf/master.yaml
-          parameter-overrides: ProjectName=${{ env.PROJECT_NAME }},ECRImage=${{ steps.build-image.outputs.image }},DbKmsKeyId=${{secrets.DBKMSKEYID}}
+          parameter-overrides: ProjectName=${{ env.PROJECT_NAME }},ECRImage=${{ steps.build-image.outputs.image }},DbKmsKeyId=${{secrets.DBKMSKEYID}},ProjectDeploymentsS3Url=${{ env.PROJECT_DEPLOYMENTS_S3_URL }}
           no-fail-on-empty-changeset: "1"
           termination-protection: "1"
