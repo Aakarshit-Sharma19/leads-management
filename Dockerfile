@@ -1,7 +1,7 @@
 ###
 #Builder
 ###
-FROM python:3.11.1-alpine3.17 as builder
+FROM python:3.11.1-alpine3.17 AS builder
 WORKDIR /app
 COPY requirements.txt /app
 RUN apk --no-cache add postgresql-dev gcc python3-dev musl-dev openssl && \

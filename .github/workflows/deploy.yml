@@ -71,7 +71,7 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: ${{ env.PROJECT_NAME }}-stack
-          template: https://techoon-global-config.s3.ap-south-1.amazonaws.com/deployments/${{ env.PROJECT_NAME }}/cf/master.yaml
+          template: ${{ env.PROJECT_DEPLOYMENTS_S3_URL }}/${{ vars.DEPLOYMENTS_PATH }}/${{ env.PROJECT_NAME }}/cf/master.yaml
           parameter-overrides: ProjectName=${{ env.PROJECT_NAME }},ECRImage=${{ steps.build-image.outputs.image }},DbKmsKeyId=${{secrets.DBKMSKEYID}},ProjectDeploymentsS3Url=${{ env.PROJECT_DEPLOYMENTS_S3_URL }}
           no-fail-on-empty-changeset: "1"
           termination-protection: "1"
