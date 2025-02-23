@@ -40,9 +40,9 @@ Leads Management UI is a comprehensive web application designed to manage leads 
     - Follow the instructions provided by the [django-allauth library](https://django-allauth.readthedocs.io/en/latest/providers.html#google) to configure Google OAuth.
 
 2. **AWS Account**:
-    - Create an ECR repository named `leads-management`.
     - Ensure you have an S3 bucket for storing deployment configurations.
     - Ensure you have the necessary IAM roles and policies.
+    - Ensure you have set up an AWS IAM OIDC provider for GitHub Actions
 
 #### Local Setup
 
@@ -96,18 +96,6 @@ Leads Management UI is a comprehensive web application designed to manage leads 
     docker run -p 8000:8000 --env-file .env leads-management-ui
     ```
 
-### Docker Deployment
-
-1. **Build the Docker image**:
-    ```bash
-    docker build -t leads-management-ui .
-    ```
-
-2. **Run the Docker container**:
-    ```bash
-    docker run -p 8000:8000 --env-file .env leads-management-ui
-    ```
-
 ### AWS Deployment
 
 This project uses GitHub Actions to automate the deployment process to AWS ECS. Follow these steps to set up and deploy the application:
@@ -119,7 +107,6 @@ This project uses GitHub Actions to automate the deployment process to AWS ECS. 
     ```
 
 2. **Set up AWS Resources**:
-    - Create an ECR repository named `leads-management`.
     - Ensure you have an S3 bucket for storing deployment configurations.
     - Ensure you have the necessary IAM roles and policies.
 
@@ -138,6 +125,7 @@ This project uses GitHub Actions to automate the deployment process to AWS ECS. 
     - Navigate to **Settings > Secrets and variables > Actions**.
     - Add the following variables:
         - `AWS_REGION`: Your preferred AWS region, e.g., `ap-south-1`.
+        - `AWS_ACCOUNT_ID`: Your AWS account id
 
 5. **GitHub Actions Workflow**:
     - The GitHub Actions workflow is defined in the file located at `<repo root>/.github/workflows/deploy.yml`.
@@ -155,90 +143,6 @@ The workflow performs the following steps:
 - **Build, tag, and push image to Amazon ECR**: Builds the Docker image, tags it, and pushes it to Amazon ECR.
 - **Deploy CloudFormation stack**: Deploys the CloudFormation stack using the parameters and template stored in S3.
 
-### Example `deploy.yml`
-
-```yaml
-name: Build and Deploy to ECS
-
-on:
-  push:
-    branches:
-      - wip
-      - master
-env:
-  AWS_REGION: ap-south-1                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: leads-management           # set this to your Amazon ECR repository name
-  ECS_TASK_DEFINITION: ./.aws/task-definition.json
-  CONTAINER_NAME: ${{ github.event.repository.name }}
-  PROJECT_NAME: ${{ github.event.repository.name }}
-  PROJECT_DEPLOYMENTS_S3_URL: https://${{ vars.BUCKET_NAME }}.s3.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.DEPLOYMENTS_PATH }}/${{ github.event.repository.name }}
-
-permissions:
-  id-token: write # required to use OIDC authentication
-  contents: read # required to checkout the code from the repo
-
-jobs:
-  build:
-    name: Build Image
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3.3.0
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::129190006344:role/Github-Actions
-          role-duration-seconds: 900 # the ttl of the session, in seconds.
-          aws-region: ap-south-1 # use your region here.
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Sync AWS deployment config files
-        id: sync-deployment-files
-        run: |
-          aws s3 sync .aws/ s3://${{ vars.BUCKET_NAME }}/${{ vars.DEPLOYMENTS_PATH }}/${{ env.PROJECT_NAME }}
-
-      - name: Ensure ECR Repository
-        id: ensure-ecr-repository
-        uses: aws-actions/aws-cloudformation-github-deploy@v1
-        with:
-          name: ecr-repository-${{ env.PROJECT_NAME }}
-          template: ${{ env.PROJECT_DEPLOYMENTS_S3_URL }}/cf/ecr.yaml
-          parameter-overrides: RepositoryName=${{ env.ECR_REPOSITORY }}
-          no-fail-on-empty-changeset: "1"
-          termination-protection: "1"
-
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ steps.ensure-ecr-repository.outputs.RepositoryUri }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          # Build a docker container and
-          # push it to ECR so that it can
-          # be deployed to ECS.
-          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Deploy cloudformation stack
-        id: deploy-cloudformation-stack
-        uses: aws-actions/aws-cloudformation-github-deploy@v1
-        with:
-          name: ${{ env.PROJECT_NAME }}-stack
-          template: ${{ env.PROJECT_DEPLOYMENTS_S3_URL }}/${{ vars.DEPLOYMENTS_PATH }}/${{ env.PROJECT_NAME }}/cf/master.yaml
-          parameter-overrides: ProjectName=${{ env.PROJECT_NAME }},ECRImage=${{ steps.build-image.outputs.image }},DbKmsKeyId=${{secrets.DBKMSKEYID}},ProjectDeploymentsS3Url=${{ env.PROJECT_DEPLOYMENTS_S3_URL }}
-          no-fail-on-empty-changeset: "1"
-          termination-protection: "1"
-```
-
-This setup ensures that your application is automatically built, tagged, pushed to ECR, and deployed to ECS whenever changes are pushed to the specified branches. Adjust the IAM role ARN and other variables according to your setup.
-
-
 ## Usage
 
 1. **Login**: Use your Google account to log in.
@@ -255,11 +159,8 @@ This setup ensures that your application is automatically built, tagged, pushed 
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgements
 
 - Thanks to [Google Cloud Platform](https://cloud.google.com/) for providing robust APIs.
 - Special thanks to [AWS](https://aws.amazon.com/) for their cloud services.
-
----
+```
